@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Page de connexion</h1>
+<form action="{{ url_for('login') }}" method="POST">
+    <p>
+        <!-- Champ de type "text" -->
+        <label for="nom">Nom : </label>
+        <input type="text" name="nom" id="nom" required>
+    </p>
+    <p>
+        <!-- Champ de type "password" -->
+        <label for="mot_de_passe">Mot de passe : </label>
+        <input type="password" name="mot_de_passe" id="mot_de_passe" required>
+    </p>
+    <p>
+        <!-- Bouton d'envoi du formulaire -->
+        <input type="submit" value="Connexion">
+        <!-- <button type="submit">Envoyer le formulaire</button> -->
+    </p>
+</form>
+
+<p>Vous n'avez pas de compte ? <a href="{{ url_for('inscription') }}">Cliquez ici</a> pour vous inscrire.</p>
+{% endblock %}
