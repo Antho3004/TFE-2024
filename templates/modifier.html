@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Modifier l'heure de réveil</h1>
+<form method="POST" action="{{ url_for('modifier_heure', heure=heure, date=date) }}">
+    <div>
+        <label for="heure">Nouvelle Heure :</label>
+        <select name="heure" id="heure" required>
+            {% for h in range(24) %}
+            <option value="{{ '%02d' % h }}" {% if heure // 100==h %}selected{% endif %}>{{ '%02d' % h }}</option>
+            {% endfor %}
+        </select> :
+        <select name="minutes" id="minutes" required>
+            {% for m in range(0, 60, 1) %}
+            <option value="{{ '%02d' % m }}" {% if heure % 100==m %}selected{% endif %}>{{ '%02d' % m }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="date">Nouvelle Date :</label>
+        <input type="date" name="date" id="date" value="{{ date }}" required>
+    </div>
+    <button type="submit">Modifier</button>
+</form>
+{% endblock %}

@@ -1,19 +1,36 @@
-<!DOCTYPE html>
-<html lang="fr">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon appli</title>
-</head>
+{% block content %}
+<h1>Gestion des heures de réveil</h1>
+<form method="POST" action="{{ url_for('traitement') }}">
+    <div>
+        <label for="heure">Heure :</label>
+        <select name="heure" id="heure" required>
+            {% for h in range(24) %}
+            <option value="{{ '%02d' % h }}">{{ '%02d' % h }}</option>
+            {% endfor %}
+        </select> :
+        <select name="minutes" id="minutes" required>
+            {% for m in range(0, 60, 1) %}
+            <option value="{{ '%02d' % m }}">{{ '%02d' % m }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="date">Date :</label>
+        <input type="date" name="date" id="date" required>
+    </div>
+    <button type="submit">Ajouter</button>
+</form>
 
-<body>
-    {% if nom_utilisateur %}
-    <p>Bonjour {{ nom_utilisateur }}, vous êtes connecté.</p>
-    {% else %}
-    <p>Un problème est survenu.</p>
-    {% endif %}
-</body>
-
-</html>
+<h2>Heures de réveil</h2>
+<ul>
+    {% for heure in heures %}
+    <li>
+        Heure : {{ '%02d:%02d' % (heure[0] // 100, heure[0] % 100) }} | Date : {{ heure[1] }}
+        <a href="{{ url_for('modifier_heure', heure=heure[0], date=heure[1]) }}">Modifier</a>
+        <a href="{{ url_for('supprimer_heure', heure=heure[0], date=heure[1]) }}">Supprimer</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
