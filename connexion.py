@@ -8,12 +8,12 @@ def recherche_utilisateur(nom_utilisateur, mot_de_passe):
         with sqlite3.connect('data.db') as conn:
             cursor = conn.cursor()
             cursor.execute('''
-                SELECT nom, mot_de_passe FROM utilisateurs WHERE nom = ?
+                SELECT id_utilisateur, nom, mot_de_passe FROM utilisateurs WHERE nom = ?
             ''', (nom_utilisateur,))
             utilisateur = cursor.fetchone()
-            if utilisateur and utilisateur[1]:
-                if bcrypt.check_password_hash(utilisateur[1], mot_de_passe):
-                    return {"nom": utilisateur[0]}
+            if utilisateur and utilisateur[2]:
+                if bcrypt.check_password_hash(utilisateur[2], mot_de_passe):
+                    return {"id": utilisateur[0], "nom": utilisateur[1]}
     except sqlite3.Error as e:
         print(f"Erreur SQLite: {e}")
     return None

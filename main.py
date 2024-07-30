@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from inscription import ajouter_utilisateur, bcrypt
 from connexion import recherche_utilisateur
 from heure_type import ajouter_heure_type, obtenir_heures_type, obtenir_heure_type, modifier_heure_type, supprimer_heure_type
@@ -8,7 +8,7 @@ app.secret_key = "2fb48ed61fe5f62c7ea52bd58128ca1179fdd8b162ac4cacc3da03e83a0b05
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return redirect(url_for('login'))
 
 @app.route('/inscription', methods=['GET', 'POST'])
 def inscription():
@@ -21,7 +21,7 @@ def inscription():
         if ajouter_utilisateur(nom, prenom, email, mot_de_passe):
             utilisateur = recherche_utilisateur(nom, mot_de_passe)
             session['nom_utilisateur'] = utilisateur['nom']
-            session['id_utilisateur'] = utilisateur['id']
+            session['id_utilisateur'] = utilisateur['id_utilisateur']
             flash('Inscription réussie et connecté!', 'success')
             return redirect(url_for('traitement'))
         else:
@@ -81,7 +81,7 @@ def traitement():
         return render_template("traitement.html", heures=heures)
 
 @app.route("/modifier/<int:heure>/<date>", methods=["GET", "POST"])
-def modifier_heure(heure, date):
+def modifier_heure_route(heure, date):
     if 'nom_utilisateur' not in session:
         return redirect(url_for('login'))
 
@@ -108,7 +108,7 @@ def modifier_heure(heure, date):
             return redirect(url_for('traitement'))
 
 @app.route("/supprimer/<int:heure>/<date>")
-def supprimer_heure(heure, date):
+def supprimer_heure_route(heure, date):
     if 'nom_utilisateur' not in session:
         return redirect(url_for('login'))
 
@@ -121,6 +121,62 @@ def supprimer_heure(heure, date):
     
     return redirect(url_for('traitement'))
 
+@app.route('/get_heures')
+def get_heures():
+    if 'id_utilisateur' not in session:
+        return redirect(url_for('login'))
+
+    id_utilisateur = session['id_utilisateur']
+    heures = obtenir_heures_type(id_utilisateur)
+
+    events = []
+    for heure in heures:
+        events.append({
+            'title': str(heure[0]),
+            'start': heure[1],
+            'heure': heure[0]
+        })
+    
+    return jsonify(events)
+
+@app.route('/add_heure', methods=['POST'])
+def add_heure():
+    if 'id_utilisateur' not in session:
+        return redirect(url_for('login'))
+
+    heure = int(request.form['heure'])
+    date = request.form['date']
+    id_utilisateur = session['id_utilisateur']
+
+    ajouter_heure_type(heure, date, id_utilisateur)
+    return '', 204
+
+@app.route('/delete_heure', methods=['POST'])
+def delete_heure():
+    if 'id_utilisateur' not in session:
+        return redirect(url_for('login'))
+
+    heure = int(request.form['heure'])
+    date = request.form['date']
+    id_utilisateur = session['id_utilisateur']
+
+    supprimer_heure_type(heure, date, id_utilisateur)
+    return '', 204
+
+@app.route('/modify_heure', methods=['POST'])
+def modify_heure():
+    if 'id_utilisateur' not in session:
+        return redirect(url_for('login'))
+
+    old_heure = int(request.form['old_heure'])
+    new_heure = int(request.form['new_heure'])
+    date = request.form['date']
+    id_utilisateur = session['id_utilisateur']
+
+    if modifier_heure_type(old_heure, date, new_heure, date, id_utilisateur):
+        return '', 204
+    else:
+        return jsonify({'error': 'Modification échouée'}), 400
+
 if __name__ == '__main__':
     app.run(debug=True)
-
