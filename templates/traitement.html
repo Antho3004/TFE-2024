@@ -1,179 +1,196 @@
 {% extends "base.html" %}
 
+{% block title %}Gestion des heures de réveil{% endblock %}
+
 {% block content %}
-<html lang="fr">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des heures de réveil</title>
-    <!-- FullCalendar CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" rel="stylesheet" />
-    <!-- jQuery, Moment.js, FullCalendar JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
-    <!-- FullCalendar Language File for French -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/locale/fr.js"></script>
-    <!-- Link to your CSS file -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+<h1>Gestion des heures de réveil</h1>
 
-<body>
-    <h1>Gestion des heures de réveil</h1>
+<form method="POST" action="{{ url_for('traitement') }}">
+    <div>
+        <label for="heure">Heure :</label>
+        <select name="heure" id="heure" required>
+            {% for h in range(24) %}
+            <option value="{{ '%02d' % h }}">{{ '%02d' % h }}</option>
+            {% endfor %}
+        </select> :
+        <select name="minutes" id="minutes" required>
+            {% for m in range(0, 60, 1) %}
+            <option value="{{ '%02d' % m }}">{{ '%02d' % m }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="date">Date :</label>
+        <input type="date" name="date" id="date" required>
+    </div>
+    <button type="submit">Ajouter</button>
+</form>
 
-    <form method="POST" action="{{ url_for('traitement') }}">
-        <div>
-            <label for="heure">Heure :</label>
-            <select name="heure" id="heure" required>
-                {% for h in range(24) %}
-                <option value="{{ '%02d' % h }}">{{ '%02d' % h }}</option>
-                {% endfor %}
-            </select> :
-            <select name="minutes" id="minutes" required>
-                {% for m in range(0, 60, 15) %}
-                <option value="{{ '%02d' % m }}">{{ '%02d' % m }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div>
-            <label for="date">Date :</label>
-            <input type="date" name="date" id="date" required>
-        </div>
-        <button type="submit">Ajouter</button>
-    </form>
+<div id="calendar"></div>
 
-    <div id="calendar"></div>
-
-    <!-- Modal for Modify Event -->
-    <div id="modify-modal" class="modal">
+<!-- Modal for Modify Event -->
+<div class="modal fade" id="modify-modal" tabindex="-1" role="dialog" aria-labelledby="modify-modal-label"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('modify-modal')">&times;</span>
-            <h2>Modifier l'heure</h2>
-            <form id="modify-form">
-                <input type="hidden" id="event-id">
-                <div>
-                    <label for="new-heure">Nouvelle Heure :</label>
-                    <select name="new-heure" id="new-heure" required>
-                        {% for h in range(24) %}
-                        <option value="{{ '%02d' % h }}">{{ '%02d' % h }}</option>
-                        {% endfor %}
-                    </select> :
-                    <select name="new-minutes" id="new-minutes" required>
-                        {% for m in range(0, 60, 15) %}
-                        <option value="{{ '%02d' % m }}">{{ '%02d' % m }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label for="new-date">Nouvelle Date :</label>
-                    <input type="date" name="new-date" id="new-date" required>
-                </div>
-                <button type="submit">Modifier</button>
-                <button type="button" id="delete-event">Supprimer</button>
-            </form>
+            <div class="modal-header">
+                <h5 class="modal-title" id="modify-modal-label" style="color: black;">Modification</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="modify-form">
+                    <input type="hidden" id="event-id">
+                    <div class="form-group">
+                        <label for="new-heure" style="color: black;">Nouvelle Heure :</label>
+                        <div class="d-flex align-items-center">
+                            <select name="new-heure" id="new-heure" class="form-control" required style="color: black;">
+                                {% for h in range(24) %}
+                                <option value="{{ '%02d' % h }}">{{ '%02d' % h }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="ml-2" style="color: black;">heure </span>
+                            <select name="new-minutes" id="new-minutes" class="form-control" required
+                                style="color: black;">
+                                {% for m in range(0, 60, 1) %}
+                                <option value="{{ '%02d' % m }}">{{ '%02d' % m }}</option>
+                                {% endfor %}
+                            </select>
+                            <span class="ml-2" style="color: black;">minute</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-date" style="color: black;">Nouvelle Date :</label>
+                        <input type="date" name="new-date" id="new-date" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Modifier</button>
+                    <button type="button" id="delete-event" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
         </div>
     </div>
+</div>
 
-    <!-- Modal for Confirmation -->
-    <div id="delete-confirmation" class="modal">
+<!-- Modal for Confirmation -->
+<div class="modal fade" id="delete-confirmation" tabindex="-1" role="dialog" aria-labelledby="delete-confirmation-label"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <span class="close" onclick="closeModal('delete-confirmation')">&times;</span>
-            <h2>Confirmation</h2>
-            <p>Êtes-vous sûr de vouloir supprimer cet événement ?</p>
-            <button id="confirm-delete">Supprimer</button>
-            <button onclick="closeModal('delete-confirmation')">Annuler</button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="delete-confirmation-label">Confirmation</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cet événement ?</p>
+                <button id="confirm-delete" class="btn btn-danger">Supprimer</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+            </div>
         </div>
     </div>
+</div>
 
-    <script>
-        $(document).ready(function () {
-            $('#calendar').fullCalendar({
-                locale: 'fr', // French localization
-                firstDay: 1, // Start week on Monday
-                editable: true,
-                droppable: true,
-                events: '/get_heures',
-                eventRender: function (event, element) {
-                    // Format the time for display
-                    var heure = Math.floor(event.title / 100);
-                    var minutes = event.title % 100;
-                    var formattedTime = heure + 'h' + ('0' + minutes).slice(-2);
-                    element.find('.fc-title').html(formattedTime);
-                },
-                drop: function (date) {
-                    var heure = prompt("Entrez le type d'heure (ex: 0830 pour 8:30 AM):");
-                    if (heure) {
-                        $.ajax({
-                            url: '/add_heure',
-                            type: 'POST',
-                            data: {
-                                heure: heure,
-                                date: date.format(),
-                                id_utilisateur: '{{ session["id_utilisateur"] }}'
-                            },
-                            success: function () {
-                                $('#calendar').fullCalendar('refetchEvents');
-                            }
-                        });
-                    }
-                },
-                eventClick: function (event, jsEvent) {
-                    // Populate and show modify modal
-                    $('#event-id').val(event.id);
-                    $('#new-heure').val(Math.floor(event.title / 100));
-                    $('#new-minutes').val(event.title % 100);
-                    $('#new-date').val(event.start.format('YYYY-MM-DD'));
-                    $('#modify-modal').show();
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-                    // Handle the delete button click
-                    $('#delete-event').off('click').on('click', function () {
-                        if (confirm("Voulez-vous vraiment supprimer cette heure de réveil ?")) {
-                            $.ajax({
-                                url: '/delete_heure',
-                                type: 'POST',
-                                data: {
-                                    heure: event.title,
-                                    date: event.start.format(),
-                                    id_utilisateur: '{{ session["id_utilisateur"] }}'
-                                },
-                                success: function () {
-                                    $('#calendar').fullCalendar('refetchEvents');
-                                    closeModal('modify-modal');
-                                }
-                            });
+<script>
+    $(document).ready(function () {
+        $('#calendar').fullCalendar({
+            locale: 'fr', // French localization
+            firstDay: 1, // Start week on Monday
+            editable: true,
+            droppable: true,
+            events: '/get_heures',
+            eventRender: function (event, element) {
+                var heure = Math.floor(event.title / 100);
+                var minutes = event.title % 100;
+                var formattedTime = heure + 'h' + ('0' + minutes).slice(-2);
+                element.find('.fc-title').html(formattedTime);
+            },
+            drop: function (date) {
+                var heure = prompt("Entrez le type d'heure (ex: 0830 pour 8:30 AM):");
+                if (heure) {
+                    $.ajax({
+                        url: '/add_heure',
+                        type: 'POST',
+                        data: {
+                            heure: heure,
+                            date: date.format(),
+                            id_utilisateur: '{{ session["id_utilisateur"] }}'
+                        },
+                        success: function () {
+                            $('#calendar').fullCalendar('refetchEvents');
                         }
                     });
+                }
+            },
+            eventClick: function (event, jsEvent) {
+                // Supprime la classe 'clicked-event' de tous les événements pour éviter plusieurs éléments en noir
+                $('.fc-event').removeClass('clicked-event');
 
-                    // Handle the modify form submission
-                    $('#modify-form').off('submit').on('submit', function (e) {
-                        e.preventDefault();
-                        var newHeure = parseInt($('#new-heure').val()) * 100 + parseInt($('#new-minutes').val());
-                        var newDate = $('#new-date').val();
+                // Ajoute la classe 'clicked-event' à l'événement cliqué
+                $(this).addClass('clicked-event');
+
+                // Le reste du code pour gérer l'événement cliqué
+                $('#event-id').val(event.id);
+                $('#new-heure').val(Math.floor(event.title / 100));
+                $('#new-minutes').val(event.title % 100);
+                $('#new-date').val(event.start.format('YYYY-MM-DD'));
+                $('#modify-modal').modal('show');
+
+                // Supprimer l'événement
+                $('#delete-event').off('click').on('click', function () {
+                    $('#delete-confirmation').modal('show');
+                    $('#confirm-delete').off('click').on('click', function () {
                         $.ajax({
-                            url: '/modify_heure',
+                            url: '/delete_heure',
                             type: 'POST',
                             data: {
-                                old_heure: event.title,
-                                new_heure: newHeure,
+                                heure: event.title,
                                 date: event.start.format(),
                                 id_utilisateur: '{{ session["id_utilisateur"] }}'
                             },
                             success: function () {
                                 $('#calendar').fullCalendar('refetchEvents');
-                                closeModal('modify-modal');
+                                $('#modify-modal').modal('hide');
+                                $('#delete-confirmation').modal('hide');
                             }
                         });
                     });
-                }
-            });
+                });
+
+                // Modifier l'événement
+                $('#modify-form').off('submit').on('submit', function (e) {
+                    e.preventDefault();
+                    var newHeure = parseInt($('#new-heure').val()) * 100 + parseInt($('#new-minutes').val());
+                    var newDate = $('#new-date').val();
+                    $.ajax({
+                        url: '/modify_heure',
+                        type: 'POST',
+                        data: {
+                            old_heure: event.title,
+                            new_heure: newHeure,
+                            date: event.start.format(),
+                            id_utilisateur: '{{ session["id_utilisateur"] }}'
+                        },
+                        success: function () {
+                            $('#calendar').fullCalendar('refetchEvents');
+                            $('#modify-modal').modal('hide');
+                        }
+                    });
+                });
+            }
         });
+    });
 
-        function closeModal(modalId) {
-            $('#' + modalId).hide();
-        }
-    </script>
-</body>
-
-</html>
+    function closeModal(modalId) {
+        $('#' + modalId).modal('hide');
+    }
+</script>
 {% endblock %}

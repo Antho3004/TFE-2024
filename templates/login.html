@@ -1,19 +1,24 @@
 {% extends "base.html" %}
 
+{% block title %}Connexion{% endblock %}
+
 {% block content %}
-<h1>Page de connexion</h1>
-<form action="{{ url_for('login') }}" method="POST">
-    <p>
-        <label for="nom">Nom : </label>
-        <input type="text" name="nom" id="nom">
-    </p>
-    <p>
-        <label for="mot_de_passe">Mot de passe : </label>
-        <input type="password" name="mot_de_passe" id="mot_de_passe">
-    </p>
-    <p>
-        <button type="submit">Se connecter</button>
-    </p>
-</form>
-<p>Pas encore inscrit ? <a href="{{ url_for('inscription') }}">Inscrivez-vous ici</a>.</p>
+<div class="container d-flex align-items-center justify-content-center min-vh-100">
+    <div class="container-form">
+        <h2 class="text-center">Connexion</h2>
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="form-group">
+                <label for="nom">Nom d'utilisateur</label>
+                <input type="text" class="form-control" id="nom" name="nom" required>
+            </div>
+            <div class="form-group">
+                <label for="mot_de_passe">Mot de passe</label>
+                <input type="password" class="form-control" id="mot_de_passe" name="mot_de_passe" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+        </form>
+        <p class="text-center mt-3">Pas de compte ? <a href="{{ url_for('inscription') }}"
+                class="text-primary">Inscrivez-vous ici</a></p>
+    </div>
+</div>
 {% endblock %}
